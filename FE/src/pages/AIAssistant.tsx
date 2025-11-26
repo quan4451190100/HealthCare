@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,24 +12,19 @@ import {
   Activity,
   Brain,
   Stethoscope,
-  Shield
+  Shield,
+  Loader2
 } from "lucide-react";
+import { askQuestionApi, getSuggestionsApi } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
 
 interface Message {
   id: number;
   type: 'user' | 'ai';
   content: string;
   timestamp: string;
+  relevantDocs?: any[];
 }
-
-const quickQuestions = [
-  "Cách giảm đau đầu tự nhiên?",
-  "Thực phẩm tốt cho tim mạch?",
-  "Bài tập thể dục cho người mới bắt đầu?",
-  "Cách cải thiện giấc ngủ?",
-  "Dấu hiệu cần gặp bác sĩ?",
-  "Cách giảm stress hiệu quả?"
-];
 
 const AIAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -37,35 +32,83 @@ const AIAssistant = () => {
       id: 1,
       type: 'ai',
       content: 'Xin chào! Tôi là AI Assistant chuyên về sức khỏe. Tôi có thể giúp bạn tìm hiểu thông tin cơ bản về sức khỏe, đưa ra lời khuyên chăm sóc sức khỏe hàng ngày. Bạn có câu hỏi gì về sức khỏe không?',
-      timestamp: '10:00'
+      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [quickQuestions, setQuickQuestions] = useState<string[]>([
+    "Cách giảm đau đầu tự nhiên?",
+    "Thực phẩm tốt cho tim mạch?",
+    "Bài tập thể dục cho người mới bắt đầu?",
+    "Cách cải thiện giấc ngủ?",
+    "Dấu hiệu cần gặp bác sĩ?",
+    "Cách giảm stress hiệu quả?"
+  ]);
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  // Load suggestions on mount
+  useEffect(() => {
+    loadSuggestions();
+  }, []);
 
+  const loadSuggestions = async () => {
+    try {
+      const response = await getSuggestionsApi(undefined, 6);
+      if (response.success && response.data.suggestions.length > 0) {
+        setQuickQuestions(response.data.suggestions);
+      }
+    } catch (error) {
+      console.error("Error loading suggestions:", error);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage = inputMessage.trim();
     const newUserMessage: Message = {
       id: messages.length + 1,
       type: 'user',
-      content: inputMessage,
+      content: userMessage,
       timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages(prev => [...prev, newUserMessage]);
+    setInputMessage("");
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
+    try {
+      const response = await askQuestionApi({ question: userMessage });
+      
+      if (response.success) {
+        const aiResponse: Message = {
+          id: messages.length + 2,
+          type: 'ai',
+          content: response.data.answer,
+          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+          relevantDocs: response.data.relevantDocs
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      } else {
+        throw new Error("Failed to get response");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage: Message = {
         id: messages.length + 2,
         type: 'ai',
-        content: 'Cảm ơn bạn đã đặt câu hỏi. Đây là thông tin tham khảo từ AI Assistant. Lưu ý: Thông tin này chỉ mang tính chất tham khảo và không thay thế cho lời khuyên của bác sĩ chuyên khoa. Nếu bạn có triệu chứng nghiêm trọng, hãy tham khảo ý kiến bác sĩ.',
+        content: 'Xin lỗi, đã có lỗi xảy ra khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.',
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
-
-    setInputMessage("");
+      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Lỗi",
+        description: "Không thể kết nối đến máy chủ",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickQuestion = (question: string) => {
@@ -146,6 +189,7 @@ const AIAssistant = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     className="min-h-[50px] resize-none border-blue-200 focus:border-blue-600"
+                    disabled={isLoading}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -157,8 +201,13 @@ const AIAssistant = () => {
                     onClick={handleSendMessage}
                     className="bg-blue-600 hover:bg-blue-700 text-white self-end"
                     size="sm"
+                    disabled={isLoading || !inputMessage.trim()}
                   >
-                    <Send className="w-4 h-4" />
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>

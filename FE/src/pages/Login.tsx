@@ -23,6 +23,27 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Email không hợp lệ",
+        description: "Vui lòng nhập đúng định dạng email (ví dụ: example@email.com)",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate password length
+    if (formData.password.length < 6) {
+      toast({
+        title: "Mật khẩu quá ngắn",
+        description: "Mật khẩu phải có ít nhất 6 ký tự",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -106,9 +127,11 @@ const Login = () => {
                     type="email"
                     placeholder="example@email.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value.trim() })}
                     className="pl-10 border-blue-200 focus:border-blue-600"
                     required
+                    pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                    title="Vui lòng nhập email hợp lệ (ví dụ: example@email.com)"
                   />
                 </div>
               </div>
@@ -126,6 +149,8 @@ const Login = () => {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10 pr-10 border-blue-200 focus:border-blue-600"
                     required
+                    minLength={4}
+                    title="Mật khẩu phải có ít nhất 6 ký tự"
                   />
                   <Button
                     type="button"
@@ -192,7 +217,8 @@ const Login = () => {
                 variant="outline" 
                 className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
                 onClick={() => {
-                  window.location.href = "http://localhost:3000/api/auth/google";
+                  const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+                  window.location.href = `${apiUrl}/api/auth/google`;
                 }}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -209,7 +235,8 @@ const Login = () => {
                 variant="outline" 
                 className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
                 onClick={() => {
-                  window.location.href = "http://localhost:3000/api/auth/facebook";
+                  const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+                  window.location.href = `${apiUrl}/api/auth/facebook`;
                 }}
               >
                 <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">

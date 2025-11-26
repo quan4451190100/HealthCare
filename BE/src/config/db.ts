@@ -39,61 +39,49 @@ export async function initializeDatabase(): Promise<void> {
   `);
 
   // Add phone column if it doesn't exist
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL;`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding phone column:', err.message);
-    }
+  const phoneResult = await pool.query(`ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL;`).catch(err => err);
+  
+  if (phoneResult instanceof Error && phoneResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding phone column:', phoneResult.message);
   }
 
   // Add address column if it doesn't exist
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN address VARCHAR(500) DEFAULT NULL;`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding address column:', err.message);
-    }
+  const addressResult = await pool.query(`ALTER TABLE users ADD COLUMN address VARCHAR(500) DEFAULT NULL;`).catch(err => err);
+  
+  if (addressResult instanceof Error && addressResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding address column:', addressResult.message);
   }
 
   // Add OAuth fields
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN google_id VARCHAR(255) DEFAULT NULL UNIQUE;`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding google_id column:', err.message);
-    }
+  const googleIdResult = await pool.query(`ALTER TABLE users ADD COLUMN google_id VARCHAR(255) DEFAULT NULL UNIQUE;`).catch(err => err);
+  
+  if (googleIdResult instanceof Error && googleIdResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding google_id column:', googleIdResult.message);
   }
 
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN facebook_id VARCHAR(255) DEFAULT NULL UNIQUE;`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding facebook_id column:', err.message);
-    }
+  const facebookIdResult = await pool.query(`ALTER TABLE users ADD COLUMN facebook_id VARCHAR(255) DEFAULT NULL UNIQUE;`).catch(err => err);
+  
+  if (facebookIdResult instanceof Error && facebookIdResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding facebook_id column:', facebookIdResult.message);
   }
 
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN provider ENUM('local','google','facebook') DEFAULT 'local';`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding provider column:', err.message);
-    }
+  const providerResult = await pool.query(`ALTER TABLE users ADD COLUMN provider ENUM('local','google','facebook') DEFAULT 'local';`).catch(err => err);
+  
+  if (providerResult instanceof Error && providerResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding provider column:', providerResult.message);
   }
 
-  try {
-    await pool.query(`ALTER TABLE users ADD COLUMN profile_picture VARCHAR(500) DEFAULT NULL;`);
-  } catch (err: any) {
-    if (err.code !== 'ER_DUP_FIELDNAME') {
-      console.error('Error adding profile_picture column:', err.message);
-    }
+  const profilePicResult = await pool.query(`ALTER TABLE users ADD COLUMN profile_picture VARCHAR(500) DEFAULT NULL;`).catch(err => err);
+  
+  if (profilePicResult instanceof Error && profilePicResult.code !== 'ER_DUP_FIELDNAME') {
+    console.error('Error adding profile_picture column:', profilePicResult.message);
   }
 
   // Allow password to be NULL for OAuth users
-  try {
-    await pool.query(`ALTER TABLE users MODIFY password VARCHAR(255) DEFAULT NULL;`);
-  } catch (err: any) {
-    console.error('Error modifying password column:', err.message);
+  const passwordResult = await pool.query(`ALTER TABLE users MODIFY password VARCHAR(255) DEFAULT NULL;`).catch(err => err);
+  
+  if (passwordResult instanceof Error) {
+    console.error('Error modifying password column:', passwordResult.message);
   }
 
   // Ensure posts table exists
