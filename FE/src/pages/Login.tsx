@@ -24,11 +24,11 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|vn|co\.uk)$/i;
     if (!emailRegex.test(formData.email)) {
       toast({
         title: "Email không hợp lệ",
-        description: "Vui lòng nhập đúng định dạng email (ví dụ: example@email.com)",
+        description: "Email phải có đuôi .com, .net, .org, .vn, v.v. (ví dụ: example@email.com)",
         variant: "destructive",
       });
       return;
@@ -130,8 +130,8 @@ const Login = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value.trim() })}
                     className="pl-10 border-blue-200 focus:border-blue-600"
                     required
-                    pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
-                    title="Vui lòng nhập email hợp lệ (ví dụ: example@email.com)"
+                    pattern="[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|vn|co\.uk)"
+                    title="Email phải có đuôi .com, .net, .org, .vn, v.v."
                   />
                 </div>
               </div>
