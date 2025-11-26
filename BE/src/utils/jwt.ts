@@ -8,9 +8,11 @@ export const signJwt = (payload: object) => {
 };
 
 export const verifyJwt = <T = any>(token: string): T | null => {
-  try {
-    return jwt.verify(token, JWT_SECRET) as T;
-  } catch {
+  const result = jwt.verify(token, JWT_SECRET);
+  
+  if (!result) {
     return null;
   }
+  
+  return result as T;
 };

@@ -195,3 +195,94 @@ export function createCommentApi(postId: number, body: CreateCommentRequest) {
   });
 }
 
+// AI Assistant APIs
+export type AskQuestionRequest = { question: string };
+export type RelevantDoc = {
+  doc_id: string;
+  question_vi: string;
+  answer_vi: string;
+  source: string;
+};
+export type AskQuestionResponse = {
+  success: boolean;
+  data: {
+    question: string;
+    answer: string;
+    relevantDocs: RelevantDoc[];
+    confidence: string;
+    timestamp: string;
+  };
+};
+export function askQuestionApi(body: AskQuestionRequest) {
+  return apiFetch<AskQuestionResponse>("/api/ai-assistant/ask", {
+    method: "POST",
+    body: JSON.stringify(body),
+    skipAuth: true, // Allow unauthenticated users to ask questions
+  });
+}
+
+export type SuggestionsResponse = {
+  success: boolean;
+  data: {
+    suggestions: string[];
+  };
+};
+export function getSuggestionsApi(topic?: string, limit?: number) {
+  const params = new URLSearchParams();
+  if (topic) params.append("topic", topic);
+  if (limit) params.append("limit", limit.toString());
+  const query = params.toString() ? `?${params.toString()}` : "";
+  
+  return apiFetch<SuggestionsResponse>(`/api/ai-assistant/suggestions${query}`, {
+    method: "GET",
+    skipAuth: true,
+  });
+}
+
+export type AIConversation = {
+  _id: string;
+  userId: string;
+  question: string;
+  answer: string;
+  relevantDocs: RelevantDoc[];
+  createdAt: string;
+};
+export type ConversationHistoryResponse = {
+  success: boolean;
+  data: {
+    conversations: AIConversation[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  };
+};
+export function getConversationHistoryApi(page: number = 1, limit: number = 20) {
+  return apiFetch<ConversationHistoryResponse>(`/api/ai-assistant/history?page=${page}&limit=${limit}`, {
+    method: "GET",
+  });
+}
+
+export type StatisticsResponse = {
+  success: boolean;
+  data: {
+    totalDocs: number;
+    sources: string[];
+    categories: Record<string, number>;
+  };
+};
+export function getStatisticsApi() {
+  return apiFetch<StatisticsResponse>("/api/ai-assistant/statistics", {
+    method: "GET",
+    skipAuth: true,
+  });
+}
+
+export function deleteConversationApi(id: string) {
+  return apiFetch<{ success: boolean; message: string }>(`/api/ai-assistant/history/${id}`, {
+    method: "DELETE",
+  });
+}
+
