@@ -173,8 +173,6 @@ export const unlikePostController = async (req: Request, res: Response) => {
   });
 };
 
-// ============ COMMENTS ============
-
 export const getCommentsController = async (req: Request, res: Response) => {
   const { id } = req.params;
   
