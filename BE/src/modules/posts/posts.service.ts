@@ -6,14 +6,12 @@ export const createPostService = async (
   title: string,
   content: string
 ) => {
-  // Kiểm tra từ cấm trong title và content
   const validation = validatePostContent(title, content);
 
   if (!validation.isValid) {
     throw new Error("BAD_WORDS_DETECTED");
   }
 
-  // Làm sạch nội dung (thay thế từ cấm bằng dấu *)
   const cleanTitle = validation.title.cleanText;
   const cleanContent = validation.content.cleanText;
 

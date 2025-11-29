@@ -26,7 +26,7 @@ export function checkBadWords(text: string, language: 'vi' | 'en' | 'both' = 'bo
     badWordsList = [...viBadWords, ...enBadWords];
   }
 
-  // Normalize text để so sánh (lowercase, loại bỏ khoảng trắng thừa)
+  // Normalize text để so sánh
   const normalizedText = text.toLowerCase().trim();
 
   // Kiểm tra từng từ cấm
@@ -36,15 +36,11 @@ export function checkBadWords(text: string, language: 'vi' | 'en' | 'both' = 'bo
     // Escape special regex characters
     const escapedWord = normalizedBadWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     
-    // Với tiếng Việt (có dấu), không dùng \b mà dùng lookahead/lookbehind hoặc kiểm tra đơn giản
-    // Với tiếng Anh, vẫn dùng \b
     let regex: RegExp;
     
     if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(normalizedBadWord)) {
-      // Từ tiếng Việt: kiểm tra có chứa từ đó không (case-insensitive)
       regex = new RegExp(escapedWord, 'gi');
     } else {
-      // Từ tiếng Anh: dùng word boundary
       regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
     }
     

@@ -38,7 +38,7 @@ class AIAssistantService {
 
   private loadMedicalData() {
     const dataPath = path.join(__dirname, '../../../../medquad_vi_translated_all_merged_with_cold.json');
-    console.log(`🔍 Attempting to load from: ${dataPath}`);
+    console.log(`Attempting to load from: ${dataPath}`);
     
     if (!fs.existsSync(dataPath)) {
       console.error('Error loading medical data: file not found');

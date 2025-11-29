@@ -58,7 +58,7 @@ export const getPostById = async (postId: number): Promise<PostRecord | null> =>
   return arr[0] || null;
 };
 
-// ============ LIKES ============
+// LIKES 
 
 export const createLike = async (postId: number, userId: number): Promise<number> => {
   const [result] = await pool.query(

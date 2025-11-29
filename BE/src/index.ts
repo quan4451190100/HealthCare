@@ -15,7 +15,6 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration - allow multiple origins including local network
 const allowedOrigins = [
   "http://localhost:8080",
   "http://localhost:5173",
@@ -26,10 +25,8 @@ const allowedOrigins = [
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    // Check if origin is in whitelist or matches local network pattern
     if (allowedOrigins.includes(origin) || origin.match(/^http:\/\/192\.168\.\d+\.\d+:\d+$/)) {
       callback(null, true);
     } else {
@@ -43,17 +40,15 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Session middleware for OAuth (optional, chỉ cần nếu dùng session)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_session_secret_key_here",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, // Set true nếu dùng HTTPS
+    cookie: { secure: false }, 
   })
 );
 
-// Initialize Passport
 app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
@@ -62,7 +57,6 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/ai-assistant", aiAssistantRoutes);
 
-// Health check for FE↔BE connectivity verification
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -71,7 +65,6 @@ const PORT = process.env.PORT || 5000;
 
 initializeDatabase()
   .then(async () => {
-    // Initialize AI Conversations table
     await AIConversationModel.createTable();
     
     app.listen(PORT, () => {
